@@ -345,3 +345,44 @@ export async function sendWelcomeEmail({
     html,
   });
 }
+
+// ─────────────────────────────────────────────────────────────
+// 7. ASSIGNMENT
+// ─────────────────────────────────────────────────────────────
+
+interface AssignmentEmailParams {
+  to: string;
+  companyName: string;
+  logoUrl?: string;
+  cleanerName: string;
+  locationName: string;
+  locationAddress: string;
+  appUrl: string;
+}
+
+export async function sendAssignmentEmail({
+  to,
+  companyName,
+  logoUrl,
+  cleanerName,
+  locationName,
+  locationAddress,
+  appUrl,
+}: AssignmentEmailParams) {
+  const transporter = createTransporter();
+  const { subject, html } = templates.getAssignmentEmail({
+    companyName,
+    logoUrl,
+    cleanerName,
+    locationName,
+    locationAddress,
+    appUrl,
+  });
+
+  await transporter.sendMail({
+    from: process.env.GMAIL_USER,
+    to,
+    subject,
+    html,
+  });
+}

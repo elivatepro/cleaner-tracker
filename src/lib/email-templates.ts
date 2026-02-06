@@ -587,38 +587,43 @@ export function getWelcomeEmail({
 
 
 // ─────────────────────────────────────────────────────────────
-// 10. INVITATION REMINDER (to Cleaner — resend)
-// Sent when admin clicks "Resend" on a pending invitation
+// 11. ASSIGNMENT EMAIL (to Cleaner)
+// Sent when admin assigns a cleaner to a location
 // ─────────────────────────────────────────────────────────────
 
-export function getInvitationReminderEmail({
+export function getAssignmentEmail({
   companyName,
   logoUrl,
-  signupUrl,
-  expiresInHours = 72,
+  cleanerName,
+  locationName,
+  locationAddress,
+  appUrl,
 }: {
   companyName: string;
   logoUrl?: string;
-  signupUrl: string;
-  expiresInHours?: number;
+  cleanerName: string;
+  locationName: string;
+  locationAddress: string;
+  appUrl: string;
 }): { subject: string; html: string } {
   return {
-    subject: `Reminder: You're invited to join ${companyName}`,
+    subject: `New Assignment: ${locationName}`,
     html: baseTemplate({
       companyName,
       logoUrl,
-      heading: 'Friendly Reminder',
+      heading: 'New Job Assignment',
       body: `
-        <p style="margin:0 0 12px;font-size:15px;color:#A0A0A0;line-height:1.6;">
-          You were recently invited to join <strong style="color:#FFFFFF;">${companyName}</strong> on CleanTrack but haven't created your account yet.
+        <p style="margin:0 0 16px;font-size:15px;color:#A0A0A0;line-height:1.6;">
+          Hi <strong style="color:#FFFFFF;">${cleanerName}</strong>, you've been assigned to a new location.
         </p>
-        <p style="margin:0;font-size:15px;color:#A0A0A0;line-height:1.6;">
-          Tap the button below to get started — it only takes a minute.
-        </p>
+        ${summaryTable([
+          { label: 'Location', value: locationName },
+          { label: 'Address', value: locationAddress },
+        ])}
       `,
-      ctaText: 'Create Your Account',
-      ctaUrl: signupUrl,
-      footer: `This invitation expires in ${expiresInHours} hours. If you didn't expect this email, you can safely ignore it.`,
+      ctaText: 'Open CleanTrack',
+      ctaUrl: appUrl,
+      footer: 'You can check in at this location once you arrive.',
     }),
   };
 }

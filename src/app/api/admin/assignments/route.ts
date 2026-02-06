@@ -69,19 +69,22 @@ export async function POST(request: NextRequest) {
     if (cleanerProfile?.email && location?.name) {
       const { data: settings } = await supabase
         .from("app_settings")
-        .select("company_name")
+        .select("company_name, logo_url")
         .single();
 
       const companyName = settings?.company_name || "Elivate";
-      const cleanerName = cleanerProfile.full_name || null;
-      const address = location.address || null;
+      const logoUrl = settings?.logo_url || undefined;
+      const cleanerName = cleanerProfile.full_name || "there";
+      const locationAddress = location.address || "--";
 
       void sendAssignmentEmail({
         to: cleanerProfile.email,
         companyName,
-        locationName: location.name,
-        address,
+        logoUrl,
         cleanerName,
+        locationName: location.name,
+        locationAddress,
+        appUrl: process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin,
       }).catch((emailError) => {
         console.error("Assignment email error:", emailError);
       });
