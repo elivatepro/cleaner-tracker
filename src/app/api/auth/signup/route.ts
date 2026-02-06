@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { createRouteHandlerClient } from "@/lib/supabase/server";
+import { sendWelcomeEmail } from "@/lib/email";
 
 interface SignupPayload {
   full_name?: string;
@@ -62,6 +63,20 @@ export async function POST(request: NextRequest) {
       .from("invitations")
       .update({ accepted_at: new Date().toISOString() })
       .eq("id", invitation.id);
+
+    // Send Welcome Email
+    const { data: settings } = await supabase
+      .from("app_settings")
+      .select("company_name, logo_url")
+      .single();
+
+    void sendWelcomeEmail({
+      to: invitation.email,
+      companyName: settings?.company_name || "Elivate",
+      logoUrl: settings?.logo_url || undefined,
+      cleanerName: full_name,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin,
+    }).catch((e) => console.error("Welcome email error:", e));
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: invitation.email,

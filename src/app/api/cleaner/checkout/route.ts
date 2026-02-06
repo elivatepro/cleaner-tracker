@@ -44,14 +44,14 @@ export async function POST(request: NextRequest) {
       supabase
         .from("checkins")
         .select(
-          "id, checkin_time, status, location:locations(id, name, latitude, longitude, geofence_radius, geofence_enabled)"
+          "id, checkin_time, status, location:locations(id, name, address, latitude, longitude, geofence_radius, geofence_enabled)"
         )
         .eq("id", checkin_id)
         .eq("cleaner_id", user.id)
         .single(),
       supabase
         .from("app_settings")
-        .select("geofence_enabled, company_name, notify_on_checkout")
+        .select("geofence_enabled, company_name, logo_url, notify_on_checkout")
         .single(),
     ]);
 
@@ -159,24 +159,30 @@ export async function POST(request: NextRequest) {
     })();
 
     const tasksCompleted = taskRows.filter((task) => task.is_completed).length;
-    const tasksTotal = taskRows.length;
+    const totalTasks = taskRows.length;
     const photosCount = photoRows.length;
 
     const companyName = settings?.company_name || "Elivate";
+    const logoUrl = settings?.logo_url || undefined;
     const notifyAdmins = settings?.notify_on_checkout ?? true;
     const cleanerEmail = user.email || profile?.email || "";
+    const cleanerName = profile?.full_name || "Cleaner";
 
     if (cleanerEmail) {
       void sendCheckoutEmail({
         to: cleanerEmail,
         companyName,
+        logoUrl,
+        cleanerName,
         locationName: location?.name || "Unknown location",
+        locationAddress: location?.address || "Unknown address",
         checkinTime: checkin.checkin_time,
         checkoutTime,
         durationLabel,
         tasksCompleted,
-        tasksTotal,
+        totalTasks,
         photosCount,
+        hasRemarks: Boolean(remarks),
         recipientRole: "cleaner",
       }).catch((emailError) => {
         console.error("Checkout email error:", emailError);
@@ -191,23 +197,25 @@ export async function POST(request: NextRequest) {
         .eq("is_active", true);
 
       if (admins?.length) {
-        const cleanerName = profile?.full_name || "Cleaner";
         void Promise.all(
           admins
             .map((admin) => admin.email)
             .filter(Boolean)
             .map((email) =>
               sendCheckoutEmail({
-                to: email,
+                to: email!,
                 companyName,
+                logoUrl,
+                cleanerName,
                 locationName: location?.name || "Unknown location",
+                locationAddress: location?.address || "Unknown address",
                 checkinTime: checkin.checkin_time,
                 checkoutTime,
                 durationLabel,
                 tasksCompleted,
-                tasksTotal,
+                totalTasks,
                 photosCount,
-                cleanerName,
+                hasRemarks: Boolean(remarks),
                 recipientRole: "admin",
               })
             )
@@ -222,7 +230,7 @@ export async function POST(request: NextRequest) {
         checkout_time: checkoutTime,
         duration_minutes: durationMinutes,
         tasks_completed: tasksCompleted,
-        tasks_total: tasksTotal,
+        tasks_total: totalTasks,
         photos_count: photosCount,
         within_geofence: withinGeofence,
       },

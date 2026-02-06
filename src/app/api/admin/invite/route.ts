@@ -31,9 +31,46 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required." }, { status: 400 });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // 1. Check if email already exists in profiles
+    const { data: existingUser } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "An account with this email already exists." },
+        { status: 400 }
+      );
+    }
+
+    // 2. Check if there is already a pending invitation for this email
+    const { data: existingInvite } = await supabase
+      .from("invitations")
+      .select("id, expires_at")
+      .eq("email", normalizedEmail)
+      .is("accepted_at", null)
+      .maybeSingle();
+
+    if (existingInvite) {
+      const isExpired = new Date(existingInvite.expires_at).getTime() < Date.now();
+      if (!isExpired) {
+        return NextResponse.json(
+          { error: "A pending invitation already exists for this email." },
+          { status: 400 }
+        );
+      }
+      // If it is expired, we can just delete it or ignore it and let the new insert happen
+      // (Supabase schema might have a unique constraint on email for invitations though)
+      await supabase.from("invitations").delete().eq("id", existingInvite.id);
+    }
+
     const { data, error } = await supabase
       .from("invitations")
-      .insert({ email: email.trim(), invited_by: user.id })
+      .insert({ email: normalizedEmail, invited_by: user.id })
       .select("id, email, token, created_at, expires_at")
       .single();
 
@@ -47,16 +84,17 @@ export async function POST(request: NextRequest) {
 
     const { data: settings } = await supabase
       .from("app_settings")
-      .select("company_name")
+      .select("company_name, logo_url")
       .single();
 
     const companyName = settings?.company_name || "Elivate";
+    const logoUrl = settings?.logo_url || undefined;
 
     void sendInviteEmail({
       to: data.email,
       inviteLink,
       companyName,
-      expiresAt: data.expires_at,
+      logoUrl,
     }).catch((error) => {
       console.error("Invite email error:", error);
     });

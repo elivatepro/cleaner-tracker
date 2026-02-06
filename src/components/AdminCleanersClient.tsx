@@ -12,7 +12,8 @@ import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Search, Users, Copy } from "lucide-react";
+import { Search, Users, Copy, Trash2, Power } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CleanerRow {
   id: string;
@@ -48,33 +49,104 @@ export function AdminCleanersClient({
   invitations,
 }: AdminCleanersClientProps) {
   const { showToast } = useToast();
+  const [rows, setRows] = useState(cleaners);
   const [query, setQuery] = useState("");
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteLink, setInviteLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingInvites, setPendingInvites] = useState(invitations);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const filteredCleaners = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    if (!normalized) return cleaners;
-    return cleaners.filter((cleaner) =>
+    if (!normalized) return rows;
+    return rows.filter((cleaner) =>
       `${cleaner.full_name} ${cleaner.email}`
         .toLowerCase()
         .includes(normalized)
     );
-  }, [cleaners, query]);
+  }, [rows, query]);
 
   const resetInviteModal = () => {
     setInviteEmail("");
     setInviteLink("");
   };
 
+  const handleToggleActive = async (cleanerId: string, currentStatus: boolean) => {
+    if (updatingId === cleanerId) return;
+    setUpdatingId(cleanerId);
+
+    try {
+      const response = await fetch(`/api/admin/cleaners/${cleanerId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active: !currentStatus }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        showToast({
+          type: "error",
+          message: data?.error || "Unable to update cleaner status.",
+        });
+        return;
+      }
+
+      setRows((prev) =>
+        prev.map((c) =>
+          c.id === cleanerId ? { ...c, is_active: !currentStatus } : c
+        )
+      );
+
+      showToast({
+        type: "success",
+        message: !currentStatus ? "Cleaner activated." : "Cleaner deactivated.",
+      });
+    } catch (error) {
+      console.error("Toggle active error:", error);
+      showToast({ type: "error", message: "Something went wrong." });
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleDeleteCleaner = async (cleanerId: string) => {
+    if (updatingId === cleanerId) return;
+    if (!confirm("Are you sure you want to permanently delete this cleaner? This action cannot be undone.")) return;
+
+    setUpdatingId(cleanerId);
+
+    try {
+      const response = await fetch(`/api/admin/cleaners/${cleanerId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        showToast({
+          type: "error",
+          message: data?.error || "Unable to delete cleaner.",
+        });
+        return;
+      }
+
+      setRows((prev) => prev.filter((c) => c.id !== cleanerId));
+      showToast({ type: "success", message: "Cleaner deleted successfully." });
+    } catch (error) {
+      console.error("Delete cleaner error:", error);
+      showToast({ type: "error", message: "Something went wrong." });
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const handleInvite = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitting) return;
 
-    const normalizedEmail = inviteEmail.trim();
+    const normalizedEmail = inviteEmail.trim().toLowerCase();
 
     if (!normalizedEmail) {
       showToast({ type: "error", message: "Email is required." });
@@ -134,6 +206,36 @@ export function AdminCleanersClient({
     } catch (error) {
       console.error("Copy link error:", error);
       showToast({ type: "error", message: "Unable to copy invite link." });
+    }
+  };
+
+  const handleResendInvite = async (inviteId: string) => {
+    if (updatingId === inviteId) return;
+    setUpdatingId(inviteId);
+
+    try {
+      const response = await fetch(`/api/admin/invite/resend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invite_id: inviteId }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        showToast({
+          type: "error",
+          message: data?.error || "Unable to resend invitation.",
+        });
+        return;
+      }
+
+      showToast({ type: "success", message: "Invitation resent." });
+    } catch (error) {
+      console.error("Resend invite error:", error);
+      showToast({ type: "error", message: "Something went wrong." });
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -210,12 +312,35 @@ export function AdminCleanersClient({
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Link
-                      className="text-sm text-accent hover:text-white transition-colors"
-                      href={`/admin/cleaners/${cleaner.id}`}
-                    >
-                      View Profile
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        className="text-sm text-accent hover:text-white transition-colors"
+                        href={`/admin/cleaners/${cleaner.id}`}
+                      >
+                        View Profile
+                      </Link>
+                      <span className="text-primary-border">|</span>
+                      <button
+                        onClick={() => handleToggleActive(cleaner.id, cleaner.is_active)}
+                        disabled={updatingId === cleaner.id}
+                        className={cn(
+                          "text-sm transition-colors",
+                          cleaner.is_active ? "text-warning hover:text-white" : "text-accent hover:text-white"
+                        )}
+                        title={cleaner.is_active ? "Deactivate" : "Activate"}
+                      >
+                        <Power className="h-4 w-4" />
+                      </button>
+                      <span className="text-primary-border">|</span>
+                      <button
+                        onClick={() => handleDeleteCleaner(cleaner.id)}
+                        disabled={updatingId === cleaner.id}
+                        className="text-sm text-danger hover:text-white transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -239,8 +364,13 @@ export function AdminCleanersClient({
                     {formatDate(invite.expires_at)}
                   </p>
                 </div>
-                <Button variant="ghost" size="small" disabled>
-                  Resend
+                <Button
+                  variant="ghost"
+                  size="small"
+                  onClick={() => handleResendInvite(invite.id)}
+                  disabled={updatingId === invite.id}
+                >
+                  {updatingId === invite.id ? "Sending..." : "Resend"}
                 </Button>
               </Card>
             ))}

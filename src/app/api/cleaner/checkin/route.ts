@@ -64,12 +64,12 @@ export async function POST(request: NextRequest) {
     const [{ data: location, error: locationError }, { data: settings }] = await Promise.all([
       supabase
         .from("locations")
-        .select("id, name, latitude, longitude, geofence_radius, geofence_enabled, is_active")
+        .select("id, name, address, latitude, longitude, geofence_radius, geofence_enabled, is_active")
         .eq("id", location_id)
         .single(),
       supabase
         .from("app_settings")
-        .select("geofence_enabled, company_name, notify_on_checkin")
+        .select("geofence_enabled, company_name, logo_url, notify_on_checkin")
         .single(),
     ]);
 
@@ -125,14 +125,19 @@ export async function POST(request: NextRequest) {
     }
 
     const companyName = settings?.company_name || "Elivate";
+    const logoUrl = settings?.logo_url || undefined;
     const notifyAdmins = settings?.notify_on_checkin ?? true;
     const cleanerEmail = user.email || profile?.email || "";
+    const cleanerName = profile?.full_name || "Cleaner";
 
     if (cleanerEmail) {
       void sendCheckinEmail({
         to: cleanerEmail,
         companyName,
+        logoUrl,
+        cleanerName,
         locationName: location.name,
+        locationAddress: location.address,
         checkinTime: checkin.checkin_time,
         recipientRole: "cleaner",
       }).catch((emailError) => {
@@ -148,18 +153,19 @@ export async function POST(request: NextRequest) {
         .eq("is_active", true);
 
       if (admins?.length) {
-        const cleanerName = profile?.full_name || "Cleaner";
         void Promise.all(
           admins
             .map((admin) => admin.email)
             .filter(Boolean)
             .map((email) =>
               sendCheckinEmail({
-                to: email,
+                to: email!,
                 companyName,
-                locationName: location.name,
-                checkinTime: checkin.checkin_time,
+                logoUrl,
                 cleanerName,
+                locationName: location.name,
+                locationAddress: location.address,
+                checkinTime: checkin.checkin_time,
                 recipientRole: "admin",
               })
             )

@@ -1,42 +1,5 @@
 import nodemailer from "nodemailer";
-
-interface InviteEmailParams {
-  to: string;
-  inviteLink: string;
-  companyName: string;
-  expiresAt: string;
-}
-
-interface CheckinEmailParams {
-  to: string;
-  companyName: string;
-  locationName: string;
-  checkinTime: string;
-  cleanerName?: string;
-  recipientRole: "cleaner" | "admin";
-}
-
-interface CheckoutEmailParams {
-  to: string;
-  companyName: string;
-  locationName: string;
-  checkinTime: string;
-  checkoutTime: string;
-  durationLabel: string;
-  tasksCompleted: number;
-  tasksTotal: number;
-  photosCount: number;
-  cleanerName?: string;
-  recipientRole: "cleaner" | "admin";
-}
-
-interface AssignmentEmailParams {
-  to: string;
-  companyName: string;
-  locationName: string;
-  address?: string | null;
-  cleanerName?: string | null;
-}
+import * as templates from "./email-templates";
 
 function createTransporter() {
   const user = process.env.GMAIL_USER;
@@ -52,16 +15,6 @@ function createTransporter() {
   });
 }
 
-function formatExpiry(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -72,188 +25,323 @@ function formatDateTime(value: string) {
   }).format(new Date(value));
 }
 
+function formatTimeOnly(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+// ─────────────────────────────────────────────────────────────
+// 1. INVITATION
+// ─────────────────────────────────────────────────────────────
+
+interface InviteEmailParams {
+  to: string;
+  inviteLink: string;
+  companyName: string;
+  logoUrl?: string;
+  expiresInHours?: number;
+}
+
 export async function sendInviteEmail({
   to,
   inviteLink,
   companyName,
-  expiresAt,
+  logoUrl,
+  expiresInHours = 72,
 }: InviteEmailParams) {
   const transporter = createTransporter();
-  const subject = `${companyName} invitation`;
-  const expiryLabel = formatExpiry(expiresAt);
-
-  const text = [
-    `You have been invited to join ${companyName}.`,
-    `Use this link to create your account: ${inviteLink}`,
-    `This invitation expires on ${expiryLabel}.`,
-  ].join("\n");
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; color: #171717; line-height: 1.5;">
-      <h2 style="margin: 0 0 12px;">You're invited to ${companyName}</h2>
-      <p style="margin: 0 0 12px;">
-        Use the link below to create your account.
-      </p>
-      <p style="margin: 0 0 16px;">
-        <a href="${inviteLink}" style="color: #000000; font-weight: 600;">Accept invitation</a>
-      </p>
-      <p style="margin: 0; color: #525252; font-size: 14px;">
-        This invitation expires on ${expiryLabel}.
-      </p>
-    </div>
-  `;
+  const { subject, html } = templates.getInvitationEmail({
+    companyName,
+    logoUrl,
+    signupUrl: inviteLink,
+    expiresInHours,
+  });
 
   await transporter.sendMail({
     from: process.env.GMAIL_USER,
     to,
     subject,
-    text,
     html,
   });
+}
+
+// ─────────────────────────────────────────────────────────────
+// 2. CHECK-IN
+// ─────────────────────────────────────────────────────────────
+
+interface CheckinEmailParams {
+  to: string;
+  companyName: string;
+  logoUrl?: string;
+  cleanerName: string;
+  locationName: string;
+  locationAddress: string;
+  checkinTime: string;
+  recipientRole: "cleaner" | "admin";
+  dashboardUrl?: string;
 }
 
 export async function sendCheckinEmail({
   to,
   companyName,
-  locationName,
-  checkinTime,
+  logoUrl,
   cleanerName,
+  locationName,
+  locationAddress,
+  checkinTime,
   recipientRole,
+  dashboardUrl,
 }: CheckinEmailParams) {
   const transporter = createTransporter();
-  const timeLabel = formatDateTime(checkinTime);
-  const subject =
-    recipientRole === "admin"
-      ? `${cleanerName || "Cleaner"} checked in at ${locationName}`
-      : `Checked in at ${locationName}`;
+  const timeLabel = formatTimeOnly(checkinTime);
 
-  const textLines = [
-    recipientRole === "admin"
-      ? `${cleanerName || "A cleaner"} checked in.`
-      : `Your check-in is confirmed.`,
-    `Location: ${locationName}`,
-    `Time: ${timeLabel}`,
-  ];
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; color: #171717; line-height: 1.5;">
-      <h2 style="margin: 0 0 12px;">${companyName} Check-in</h2>
-      <p style="margin: 0 0 12px;">
-        ${
-          recipientRole === "admin"
-            ? `${cleanerName || "A cleaner"} checked in.`
-            : "Your check-in is confirmed."
-        }
-      </p>
-      <p style="margin: 0;">
-        <strong>Location:</strong> ${locationName}<br />
-        <strong>Time:</strong> ${timeLabel}
-      </p>
-    </div>
-  `;
+  const { subject, html } = recipientRole === "admin"
+    ? templates.getCheckinAdminNotificationEmail({
+        companyName,
+        logoUrl,
+        cleanerName,
+        locationName,
+        locationAddress,
+        checkinTime: timeLabel,
+        dashboardUrl: dashboardUrl || `${process.env.NEXT_PUBLIC_APP_URL}/admin`,
+      })
+    : templates.getCheckinConfirmationEmail({
+        companyName,
+        logoUrl,
+        cleanerName,
+        locationName,
+        locationAddress,
+        checkinTime: timeLabel,
+      });
 
   await transporter.sendMail({
     from: process.env.GMAIL_USER,
     to,
     subject,
-    text: textLines.join("\n"),
     html,
   });
+}
+
+// ─────────────────────────────────────────────────────────────
+// 3. CHECK-OUT
+// ─────────────────────────────────────────────────────────────
+
+interface CheckoutEmailParams {
+  to: string;
+  companyName: string;
+  logoUrl?: string;
+  cleanerName: string;
+  locationName: string;
+  locationAddress: string;
+  checkinTime: string;
+  checkoutTime: string;
+  durationLabel: string;
+  tasksCompleted: number;
+  totalTasks: number;
+  photosCount: number;
+  hasRemarks: boolean;
+  recipientRole: "cleaner" | "admin";
+  activityDetailUrl?: string;
 }
 
 export async function sendCheckoutEmail({
   to,
   companyName,
+  logoUrl,
+  cleanerName,
   locationName,
+  locationAddress,
   checkinTime,
   checkoutTime,
   durationLabel,
   tasksCompleted,
-  tasksTotal,
+  totalTasks,
   photosCount,
-  cleanerName,
+  hasRemarks,
   recipientRole,
+  activityDetailUrl,
 }: CheckoutEmailParams) {
   const transporter = createTransporter();
-  const checkinLabel = formatDateTime(checkinTime);
-  const checkoutLabel = formatDateTime(checkoutTime);
-  const subject =
-    recipientRole === "admin"
-      ? `${cleanerName || "Cleaner"} checked out at ${locationName}`
-      : `Checked out at ${locationName}`;
+  const checkinLabel = formatTimeOnly(checkinTime);
+  const checkoutLabel = formatTimeOnly(checkoutTime);
 
-  const textLines = [
-    recipientRole === "admin"
-      ? `${cleanerName || "A cleaner"} checked out.`
-      : "Your checkout is complete.",
-    `Location: ${locationName}`,
-    `Check-in: ${checkinLabel}`,
-    `Check-out: ${checkoutLabel}`,
-    `Duration: ${durationLabel}`,
-    `Tasks: ${tasksCompleted}/${tasksTotal}`,
-    `Photos: ${photosCount}`,
-  ];
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; color: #171717; line-height: 1.5;">
-      <h2 style="margin: 0 0 12px;">${companyName} Checkout</h2>
-      <p style="margin: 0 0 12px;">
-        ${
-          recipientRole === "admin"
-            ? `${cleanerName || "A cleaner"} checked out.`
-            : "Your checkout is complete."
-        }
-      </p>
-      <p style="margin: 0;">
-        <strong>Location:</strong> ${locationName}<br />
-        <strong>Check-in:</strong> ${checkinLabel}<br />
-        <strong>Check-out:</strong> ${checkoutLabel}<br />
-        <strong>Duration:</strong> ${durationLabel}<br />
-        <strong>Tasks:</strong> ${tasksCompleted}/${tasksTotal}<br />
-        <strong>Photos:</strong> ${photosCount}
-      </p>
-    </div>
-  `;
+  const { subject, html } = recipientRole === "admin"
+    ? templates.getCheckoutAdminNotificationEmail({
+        companyName,
+        logoUrl,
+        cleanerName,
+        locationName,
+        locationAddress,
+        checkinTime: checkinLabel,
+        checkoutTime: checkoutLabel,
+        duration: durationLabel,
+        tasksCompleted,
+        totalTasks,
+        photosCount,
+        hasRemarks,
+        activityDetailUrl: activityDetailUrl || `${process.env.NEXT_PUBLIC_APP_URL}/admin/activity`,
+      })
+    : templates.getCheckoutConfirmationEmail({
+        companyName,
+        logoUrl,
+        cleanerName,
+        locationName,
+        locationAddress,
+        checkinTime: checkinLabel,
+        checkoutTime: checkoutLabel,
+        duration: durationLabel,
+        tasksCompleted,
+        totalTasks,
+      });
 
   await transporter.sendMail({
     from: process.env.GMAIL_USER,
     to,
     subject,
-    text: textLines.join("\n"),
     html,
   });
 }
 
-export async function sendAssignmentEmail({
+// ─────────────────────────────────────────────────────────────
+// 4. GEOFENCE ALERT
+// ─────────────────────────────────────────────────────────────
+
+interface GeofenceEmailParams {
+  to: string;
+  companyName: string;
+  logoUrl?: string;
+  cleanerName: string;
+  locationName: string;
+  action: "check-in" | "check-out";
+  distance: number;
+  radius: number;
+  time: string;
+  activityDetailUrl: string;
+}
+
+export async function sendGeofenceViolationEmail({
   to,
   companyName,
-  locationName,
-  address,
+  logoUrl,
   cleanerName,
-}: AssignmentEmailParams) {
+  locationName,
+  action,
+  distance,
+  radius,
+  time,
+  activityDetailUrl,
+}: GeofenceEmailParams) {
   const transporter = createTransporter();
-  const subject = `Assigned to ${locationName}`;
-
-  const textLines = [
-    `Hi ${cleanerName || "there"},`,
-    `You have been assigned to ${locationName}.`,
-  ];
-  if (address) textLines.push(`Address: ${address}`);
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; color: #171717; line-height: 1.5;">
-      <h2 style="margin: 0 0 12px;">New Assignment</h2>
-      <p style="margin: 0 0 12px;">Hi ${cleanerName || "there"}, you have been assigned to <strong>${locationName}</strong>.</p>
-      ${address ? `<p style="margin: 0 0 12px;"><strong>Address:</strong> ${address}</p>` : ""}
-      <p style="margin: 0; color: #525252; font-size: 14px;">Sent from ${companyName}.</p>
-    </div>
-  `;
+  const { subject, html } = templates.getGeofenceViolationEmail({
+    companyName,
+    logoUrl,
+    cleanerName,
+    locationName,
+    action,
+    distance,
+    radius,
+    time: formatTimeOnly(time),
+    activityDetailUrl,
+  });
 
   await transporter.sendMail({
     from: process.env.GMAIL_USER,
     to,
     subject,
-    text: textLines.join("\n"),
+    html,
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// 5. ACCOUNT STATUS
+// ─────────────────────────────────────────────────────────────
+
+export async function sendAccountDeactivatedEmail({
+  to,
+  companyName,
+  logoUrl,
+  cleanerName,
+}: {
+  to: string;
+  companyName: string;
+  logoUrl?: string;
+  cleanerName: string;
+}) {
+  const transporter = createTransporter();
+  const { subject, html } = templates.getAccountDeactivatedEmail({
+    companyName,
+    logoUrl,
+    cleanerName,
+  });
+
+  await transporter.sendMail({
+    from: process.env.GMAIL_USER,
+    to,
+    subject,
+    html,
+  });
+}
+
+export async function sendAccountReactivatedEmail({
+  to,
+  companyName,
+  logoUrl,
+  cleanerName,
+  appUrl,
+}: {
+  to: string;
+  companyName: string;
+  logoUrl?: string;
+  cleanerName: string;
+  appUrl: string;
+}) {
+  const transporter = createTransporter();
+  const { subject, html } = templates.getAccountReactivatedEmail({
+    companyName,
+    logoUrl,
+    cleanerName,
+    appUrl,
+  });
+
+  await transporter.sendMail({
+    from: process.env.GMAIL_USER,
+    to,
+    subject,
+    html,
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// 6. WELCOME
+// ─────────────────────────────────────────────────────────────
+
+export async function sendWelcomeEmail({
+  to,
+  companyName,
+  logoUrl,
+  cleanerName,
+  appUrl,
+}: {
+  to: string;
+  companyName: string;
+  logoUrl?: string;
+  cleanerName: string;
+  appUrl: string;
+}) {
+  const transporter = createTransporter();
+  const { subject, html } = templates.getWelcomeEmail({
+    companyName,
+    logoUrl,
+    cleanerName,
+    appUrl,
+  });
+
+  await transporter.sendMail({
+    from: process.env.GMAIL_USER,
+    to,
+    subject,
     html,
   });
 }
