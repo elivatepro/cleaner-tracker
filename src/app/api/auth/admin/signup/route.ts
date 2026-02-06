@@ -21,10 +21,6 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createRouteHandlerClient();
-    const { data: authData } = await supabase.auth.getUser();
-    if (authData.user) {
-      return NextResponse.json({ error: "Already signed in." }, { status: 400 });
-    }
 
     const adminSupabase = createAdminSupabaseClient();
 
@@ -55,6 +51,9 @@ export async function POST(request: NextRequest) {
       console.error("Admin user creation error:", createError);
       return NextResponse.json({ error: createError?.message || "Unable to create admin account." }, { status: 400 });
     }
+
+    // Sign out existing session to prevent conflicts before signing in new user
+    await supabase.auth.signOut();
 
     // Sign in the newly created user
     const { error: signInError } = await supabase.auth.signInWithPassword({

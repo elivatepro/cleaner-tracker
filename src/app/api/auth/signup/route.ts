@@ -23,11 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createRouteHandlerClient();
-    const { data: authData } = await supabase.auth.getUser();
-    if (authData.user) {
-      return NextResponse.json({ error: "Already signed in." }, { status: 400 });
-    }
-
+    
     const adminSupabase = createAdminSupabaseClient();
     const { data: invitation, error: inviteError } = await adminSupabase
       .from("invitations")
@@ -78,6 +74,9 @@ export async function POST(request: NextRequest) {
       cleanerName: full_name,
       appUrl: getAppUrl(),
     }).catch((e) => console.error("Welcome email error:", e));
+
+    // Sign out existing session to prevent conflicts before signing in new user
+    await supabase.auth.signOut();
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: invitation.email,
