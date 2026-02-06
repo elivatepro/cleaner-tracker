@@ -20,7 +20,7 @@ export default async function AdminCleanerDetailPage({ params }: CleanerDetailPr
   if (error || !cleaner) {
     return (
       <Card variant="danger">
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-danger">
           Cleaner not found. Please go back and try again.
         </p>
       </Card>

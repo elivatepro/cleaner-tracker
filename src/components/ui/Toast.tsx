@@ -64,14 +64,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed right-4 top-4 z-toast flex w-[320px] flex-col gap-3">
+      <div className="fixed inset-x-4 bottom-4 z-[60] flex flex-col gap-3 sm:left-auto sm:right-4 sm:w-[320px]">
         {toasts.map((toast) => {
           const Icon = iconMap[toast.type];
           return (
             <div
               key={toast.id}
               className={cn(
-                "relative flex items-start gap-3 rounded-lg bg-surface-raised p-4 shadow-xl border border-primary-border",
+                "relative flex items-start gap-3 rounded-xl bg-black p-4 shadow-2xl border border-primary-border",
                 toastClasses[toast.type]
               )}
               role="status"
@@ -79,11 +79,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <Icon className={cn("h-5 w-5 mt-0.5 shrink-0", iconColorMap[toast.type])} />
               <div className="flex-1 flex flex-col gap-1">
                 {toast.title && <h4 className="text-sm font-medium text-white">{toast.title}</h4>}
-                <p className="text-sm text-secondary-muted leading-relaxed">{toast.message}</p>
+                <p className="text-sm text-white leading-relaxed">{toast.message}</p>
               </div>
               <button
                 onClick={() => removeToast(toast.id)}
-                className="text-secondary-dim hover:text-white transition-colors"
+                className="text-secondary-muted hover:text-white transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>

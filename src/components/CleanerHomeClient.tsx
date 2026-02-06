@@ -66,7 +66,7 @@ export function CleanerHomeClient({
     if (!activeCheckin?.checkin_time) return;
     const interval = window.setInterval(() => {
       setDurationLabel(buildDuration(activeCheckin.checkin_time));
-    }, 60000);
+    }, 1000);
     return () => window.clearInterval(interval);
   }, [activeCheckin?.checkin_time]);
 
@@ -351,9 +351,15 @@ export function CleanerHomeClient({
 
 function buildDuration(checkinTime: string) {
   const diffMs = Date.now() - new Date(checkinTime).getTime();
-  const totalMinutes = Math.max(0, Math.floor(diffMs / 60000));
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
+  const totalSeconds = Math.max(0, Math.floor(diffMs / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const parts = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0 || hours > 0) parts.push(`${minutes}m`);
+  parts.push(`${seconds}s`);
+  
+  return parts.join(" ");
 }

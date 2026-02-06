@@ -87,47 +87,47 @@ export default async function CleanerHistoryDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link className="text-sm text-primary hover:underline" href="/cleaner/history">
+      <Link className="text-sm text-accent hover:text-white transition-colors" href="/cleaner/history">
         &lt;- Back to history
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold text-neutral-900">Activity Detail</h1>
-        <p className="text-sm text-neutral-400">
+        <h1 className="text-2xl font-bold text-white">Activity Detail</h1>
+        <p className="text-sm text-secondary-dim">
           {location?.name || "Unknown location"}
         </p>
       </div>
 
       <Card>
-        <div className="flex flex-col gap-2 text-sm text-neutral-600">
+        <div className="flex flex-col gap-2 text-sm text-secondary-muted">
           <p>
-            <span className="font-semibold text-neutral-900">Location:</span>{" "}
-            {location?.address || "--"}
+            <span className="font-semibold text-white">Location:</span>{" "}
+            <span className="text-white">{location?.address || "--"}</span>
           </p>
           <p>
-            <span className="font-semibold text-neutral-900">Status:</span>{" "}
+            <span className="font-semibold text-white">Status:</span>{" "}
             <Badge variant={activity.status === "checked_in" ? "success" : "neutral"}>
               {activity.status === "checked_in" ? "Checked In" : "Checked Out"}
             </Badge>
           </p>
           <p>
-            <span className="font-semibold text-neutral-900">Check-in:</span>{" "}
-            {formatDateTime(activity.checkin_time)}
+            <span className="font-semibold text-white">Check-in:</span>{" "}
+            <span className="text-white">{formatDateTime(activity.checkin_time)}</span>
           </p>
           <p>
-            <span className="font-semibold text-neutral-900">Check-out:</span>{" "}
-            {activity.checkout_time ? formatDateTime(activity.checkout_time) : "--"}
+            <span className="font-semibold text-white">Check-out:</span>{" "}
+            <span className="text-white">{activity.checkout_time ? formatDateTime(activity.checkout_time) : "--"}</span>
           </p>
           <p>
-            <span className="font-semibold text-neutral-900">Remarks:</span>{" "}
-            {activity.remarks || "--"}
+            <span className="font-semibold text-white">Remarks:</span>{" "}
+            <span className="text-white">{activity.remarks || "--"}</span>
           </p>
         </div>
       </Card>
 
       <Card>
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-neutral-900">
+          <h2 className="text-base font-semibold text-white">
             Checklist Results
           </h2>
           <Badge variant={completedTasks === totalTasks ? "success" : "neutral"}>
@@ -136,15 +136,15 @@ export default async function CleanerHistoryDetailPage({
         </div>
         <div className="mt-4 flex flex-col gap-3">
           {totalTasks === 0 ? (
-            <p className="text-sm text-neutral-400">No checklist results.</p>
+            <p className="text-sm text-secondary-dim">No checklist results.</p>
           ) : (
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             tasks?.map((task: any) => (
               <div
                 key={task.id}
-                className="flex items-center justify-between text-sm text-neutral-600"
+                className="flex items-center justify-between text-sm text-secondary-muted border-b border-primary-border last:border-0 pb-2 last:pb-0"
               >
-                <span>{(Array.isArray(task.checklist_item) ? task.checklist_item[0]?.label : task.checklist_item?.label) || "Task"}</span>
+                <span className="text-white">{(Array.isArray(task.checklist_item) ? task.checklist_item[0]?.label : task.checklist_item?.label) || "Task"}</span>
                 <Badge variant={task.is_completed ? "success" : "warning"}>
                   {task.is_completed ? "Done" : "Missed"}
                 </Badge>
@@ -155,19 +155,19 @@ export default async function CleanerHistoryDetailPage({
       </Card>
 
       <Card>
-        <h2 className="text-base font-semibold text-neutral-900">Photos</h2>
+        <h2 className="text-base font-semibold text-white">Photos</h2>
         <div className="mt-4">
           {signedPhotos.length === 0 ? (
-            <p className="text-sm text-neutral-400">No photos uploaded.</p>
+            <p className="text-sm text-secondary-dim">No photos uploaded.</p>
           ) : (
             <div className="grid grid-cols-3 gap-3 md:grid-cols-4 lg:grid-cols-5">
               {signedPhotos.map((photo) => (
-                <div key={photo.id} className="relative h-20 w-20">
+                <div key={photo.id} className="relative aspect-square">
                   <Image
                     src={photo.url}
                     alt="Checkout photo"
                     fill
-                    className="rounded-lg object-cover"
+                    className="rounded-lg object-cover border border-primary-border"
                     unoptimized
                   />
                 </div>

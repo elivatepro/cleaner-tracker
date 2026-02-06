@@ -48,16 +48,16 @@ export function AdminMobileMenu() {
             className="absolute inset-0 bg-black/50"
             onClick={() => setIsOpen(false)}
           />
-          <div className="relative h-full w-64 bg-secondary p-4 shadow-lg">
+          <div className="relative h-full w-64 bg-primary p-4 shadow-lg border-r border-primary-border">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-neutral-900">Menu</p>
+              <p className="text-sm font-semibold text-white">Menu</p>
               <Button
                 variant="ghost"
-                className="h-10 w-10 px-0"
+                className="h-10 w-10 px-0 text-secondary-dim hover:text-white"
                 aria-label="Close menu"
                 onClick={() => setIsOpen(false)}
               >
-                <X className="h-5 w-5 text-neutral-600" />
+                <X className="h-5 w-5" />
               </Button>
             </div>
 
@@ -71,14 +71,14 @@ export function AdminMobileMenu() {
                     href={item.href}
                     onClick={() => setIsOpen(false)}
                     className={cn(
-                      "flex min-h-[44px] items-center gap-3 rounded-lg px-3 text-base text-neutral-600 hover:bg-neutral-50",
-                      isActive && "bg-neutral-100 font-semibold text-primary"
+                      "flex min-h-[44px] items-center gap-3 rounded-lg px-3 text-base text-secondary-muted hover:bg-primary-light hover:text-white transition-colors",
+                      isActive && "bg-primary-lighter font-semibold text-white"
                     )}
                   >
                     <Icon
                       className={cn(
                         "h-5 w-5",
-                        isActive ? "text-primary" : "text-neutral-400"
+                        isActive ? "text-accent" : "text-secondary-dim"
                       )}
                     />
                     <span>{item.label}</span>

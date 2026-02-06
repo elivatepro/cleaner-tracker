@@ -23,7 +23,7 @@ export default async function CleanerProfilePage() {
   if (error || !profile) {
     return (
       <Card variant="danger">
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-danger">
           We could not load your profile. Please refresh.
         </p>
       </Card>

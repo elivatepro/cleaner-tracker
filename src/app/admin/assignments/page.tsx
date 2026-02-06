@@ -23,7 +23,7 @@ export default async function AdminAssignmentsPage() {
   if (error) {
     return (
       <Card variant="danger">
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-danger">
           We could not load assignments. Please refresh.
         </p>
       </Card>

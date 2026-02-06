@@ -36,7 +36,7 @@ export default async function CleanerHomePage() {
   if (activeError || assignmentsError) {
     return (
       <Card variant="danger">
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-danger">
           We could not load your assignments right now. Please refresh the page.
         </p>
       </Card>

@@ -16,7 +16,7 @@ export default async function CleanerCheckoutPage({
   if (!checkinId) {
     return (
       <Card variant="danger">
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-danger">
           Missing check-in reference. Please return to the home screen.
         </p>
       </Card>
@@ -45,7 +45,7 @@ export default async function CleanerCheckoutPage({
   if (error || !checkin) {
     return (
       <Card variant="danger">
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-danger">
           Check-in not found. Please return to the home screen.
         </p>
       </Card>
@@ -55,11 +55,11 @@ export default async function CleanerCheckoutPage({
   if (checkin.status !== "checked_in") {
     return (
       <Card>
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-secondary-muted">
           This check-in is already checked out.
         </p>
         <div className="mt-3">
-          <Link className="text-sm text-primary hover:underline" href="/cleaner">
+          <Link className="text-sm text-accent hover:text-white transition-colors" href="/cleaner">
             Back to Home
           </Link>
         </div>
@@ -85,7 +85,7 @@ export default async function CleanerCheckoutPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link className="text-sm text-primary hover:underline" href="/cleaner">
+      <Link className="text-sm text-accent hover:text-white transition-colors" href="/cleaner">
         &lt;- Back to Home
       </Link>
       <CleanerCheckoutClient

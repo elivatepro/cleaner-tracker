@@ -22,7 +22,7 @@ export function AddToHomeTip({ className }: AddToHomeTipProps) {
   if (!show) return null;
 
   return (
-    <p className={className ?? "text-center text-xs text-neutral-400"}>
+    <p className={className ?? "text-center text-xs text-secondary-dim"}>
       Tip: Add to your home screen for quick access
     </p>
   );

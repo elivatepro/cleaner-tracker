@@ -13,7 +13,7 @@ export default async function AdminChecklistPage() {
   if (error) {
     return (
       <Card variant="danger">
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-danger">
           We could not load checklist items. Please refresh.
         </p>
       </Card>

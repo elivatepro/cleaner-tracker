@@ -39,19 +39,27 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
     .slice(0, 2)
     .join("");
 
+  const { data: settings } = await supabase
+    .from("app_settings")
+    .select("company_name")
+    .single();
+
+  const companyName = settings?.company_name || process.env.NEXT_PUBLIC_COMPANY_NAME || "CleanTrack";
+
   return (
     <div className="min-h-screen bg-primary">
-      <header className="sticky top-0 z-sticky h-16 bg-[#0F0F0F] border-b border-primary-border shadow-sm isolate">
+      <header className="sticky top-0 z-[50] h-16 bg-[#0F0F0F] border-b border-primary-border shadow-md isolate">
         <div className="flex h-full items-center justify-between px-4 md:px-6 lg:px-8 relative z-10">
           <div className="flex items-center gap-3">
             <AdminMobileMenu />
             <Link href="/admin" className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-lighter border border-primary-border text-sm font-semibold text-white">
-                {process.env.NEXT_PUBLIC_COMPANY_NAME?.[0] || "E"}
+              <Avatar initials={companyName[0]} size="sm" className="rounded-lg border-primary-border" />
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white leading-none">
+                  {companyName}
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-secondary-dim font-bold mt-0.5">Admin</span>
               </div>
-              <span className="hidden text-base font-semibold text-white md:inline">
-                {process.env.NEXT_PUBLIC_COMPANY_NAME || "Elivate"} <span className="text-secondary-dim font-normal">Admin</span>
-              </span>
             </Link>
           </div>
           <div className="flex items-center gap-3">

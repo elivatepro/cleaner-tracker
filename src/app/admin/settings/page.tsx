@@ -14,7 +14,7 @@ export default async function AdminSettingsPage() {
   if (error || !data) {
     return (
       <Card variant="danger">
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-danger">
           We could not load settings. Please refresh.
         </p>
       </Card>

@@ -27,12 +27,18 @@ export default async function CleanerLayout({ children }: CleanerLayoutProps) {
     .eq("id", user.id)
     .single();
 
+  const { data: settings } = await supabase
+    .from("app_settings")
+    .select("company_name")
+    .single();
+
   if (profile?.role !== "cleaner") {
     redirect("/login");
   }
 
   const fullName = profile?.full_name?.trim() || "Cleaner";
   const firstName = fullName.split(" ")[0] || "Cleaner";
+  const companyName = settings?.company_name || process.env.NEXT_PUBLIC_COMPANY_NAME || "CleanTrack";
   const initials = fullName
     .split(" ")
     .filter(Boolean)
@@ -42,12 +48,12 @@ export default async function CleanerLayout({ children }: CleanerLayoutProps) {
 
   return (
     <div className="min-h-screen bg-primary">
-      <header className="sticky top-0 z-sticky h-14 border-b border-primary-border bg-[#0F0F0F] shadow-sm isolate">
+      <header className="sticky top-0 z-[50] h-16 border-b border-primary-border bg-[#0F0F0F] shadow-md isolate">
         <div className="flex h-full items-center justify-between px-4 md:px-12 relative z-10">
           <div className="flex items-center gap-3">
-            <Avatar src={profile?.avatar_url} initials={initials} size="sm" />
+            <Avatar src={profile?.avatar_url} initials={initials} size="md" />
             <div className="flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider text-secondary-dim font-bold">Welcome</span>
+              <span className="text-[10px] uppercase tracking-wider text-accent font-bold">{companyName}</span>
               <span className="text-sm font-semibold text-white">
                 Hi, {firstName}
               </span>
@@ -55,7 +61,7 @@ export default async function CleanerLayout({ children }: CleanerLayoutProps) {
           </div>
           <Link
             href="/cleaner/profile"
-            className="text-secondary-dim hover:text-white transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-light border border-primary-border text-secondary-dim hover:text-white transition-colors"
           >
             <Settings className="h-5 w-5" />
           </Link>
