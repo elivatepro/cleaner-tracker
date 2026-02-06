@@ -56,14 +56,14 @@ export function AdminMobileMenu() {
 
   return (
     <>
-      <Button
-        variant="ghost"
-        className="h-10 w-10 px-0 text-secondary md:hidden"
+      <button
+        type="button"
+        className="flex h-10 w-10 items-center justify-center rounded-lg text-white hover:bg-white/10 active:scale-95 transition-all md:hidden -ml-2"
         aria-label="Open menu"
         onClick={() => setIsOpen(true)}
       >
-        <Menu className="h-5 w-5" />
-      </Button>
+        <Menu className="h-6 w-6" strokeWidth={2.5} />
+      </button>
 
       {isOpen ? (
         <div className="fixed inset-0 z-[100] md:hidden">

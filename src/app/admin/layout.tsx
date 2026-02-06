@@ -50,28 +50,28 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="min-h-screen bg-primary">
       <header className="sticky top-0 z-header h-16 bg-[#0F0F0F] border-b border-primary-border shadow-md isolate">
-        <div className="flex h-full items-center justify-between px-3 md:px-6 lg:px-8 relative z-10">
-          <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex h-full items-center justify-between px-4 md:px-6 lg:px-8 relative z-10">
+          <div className="flex items-center gap-1">
             <AdminMobileMenu />
-            <Link href="/admin" className="flex items-center gap-2 md:gap-3">
-              <div className="relative h-8 w-8 overflow-hidden rounded-lg border border-primary-border bg-primary-light">
+            <Link href="/admin" className="flex items-center gap-3">
+              <div className="relative h-9 w-9 overflow-hidden rounded-lg border border-primary-border bg-primary-light shadow-sm">
                 <Image
                   src="/Elivate Network Logo.svg"
                   alt="Logo"
                   fill
-                  className="object-contain p-1"
+                  className="object-contain p-1.5"
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-white leading-none truncate max-w-[120px] md:max-w-none">
+                <span className="text-[15px] font-bold text-white leading-tight">
                   {companyName}
                 </span>
-                <span className="text-[10px] uppercase tracking-wider text-secondary-dim font-bold mt-0.5">Admin</span>
+                <span className="text-[10px] uppercase tracking-[0.05em] text-accent font-bold">Admin</span>
               </div>
             </Link>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-secondary-muted sm:inline">{fullName}</span>
+            <span className="hidden text-sm font-medium text-secondary-muted sm:inline">{fullName}</span>
             <Avatar src={profile?.avatar_url} initials={initials} size="sm" />
           </div>
         </div>
