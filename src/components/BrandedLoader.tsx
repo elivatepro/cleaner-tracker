@@ -18,8 +18,8 @@ const EXIT_DURATION_MS = 300;
 
 export function BrandedLoader() {
   const [brand, setBrand] = useState<LoaderBrand>({
-    companyName: "CleanTrack",
-    logoUrl: null,
+    companyName: "Elivate",
+    logoUrl: "/Elivate Network Logo.svg",
     primaryColor: "#0F0F0F",
     secondaryColor: "#FFFFFF",
   });

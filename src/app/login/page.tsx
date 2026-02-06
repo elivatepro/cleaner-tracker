@@ -2,6 +2,7 @@
 
 import type { FormEvent } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { AddToHomeTip } from "@/components/AddToHomeTip";
 import { Button } from "@/components/ui/Button";
@@ -112,8 +113,14 @@ export default function LoginPage() {
     <div className="relative z-base flex min-h-screen items-center justify-center bg-primary px-4 py-6 md:px-12 md:py-8">
       <div className="relative z-base w-full max-w-[420px] rounded-2xl bg-primary-light border border-primary-border p-10 shadow-xl">
         <div className="mb-8 flex flex-col items-center gap-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-raised border border-primary-border text-2xl font-bold text-white shadow-lg">
-            {companyInitial}
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-raised border border-primary-border shadow-lg overflow-hidden">
+            <Image
+              src="/Elivate Network Logo.svg"
+              alt={`${companyName} logo`}
+              fill
+              className="object-contain p-2"
+              priority
+            />
           </div>
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-semibold text-white">Welcome back</h1>

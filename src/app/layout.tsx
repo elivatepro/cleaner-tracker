@@ -13,6 +13,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "CleanTrack",
   description: "Cleaner check-in and tracking web app.",
+  icons: {
+    icon: "/Elivate Network Logo.svg",
+    apple: "/Elivate Network Logo.svg",
+  },
 };
 
 export default function RootLayout({

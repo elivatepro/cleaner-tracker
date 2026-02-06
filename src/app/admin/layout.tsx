@@ -53,7 +53,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex items-center gap-3">
             <AdminMobileMenu />
             <Link href="/admin" className="flex items-center gap-3">
-              <Avatar initials={companyName[0]} size="sm" className="rounded-lg border-primary-border" />
+              <Avatar src="/Elivate Network Logo.svg" initials={companyName[0]} size="sm" className="rounded-lg border-primary-border" />
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-white leading-none">
                   {companyName}
