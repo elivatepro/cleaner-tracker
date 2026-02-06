@@ -65,18 +65,28 @@ export function AdminMobileMenu() {
       </Button>
 
       {isOpen ? (
-        <div className="fixed inset-0 z-modal md:hidden">
+        <div className="fixed inset-0 z-[100] md:hidden">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           />
-          <div className="relative h-full w-64 bg-primary p-4 shadow-lg border-r border-primary-border flex flex-col justify-between">
+          <div className="relative h-full w-72 bg-[#0F0F0F] p-5 shadow-2xl border-r border-primary-border flex flex-col justify-between animate-in slide-in-from-left duration-300">
             <div>
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-white">Menu</p>
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-8 w-8 overflow-hidden rounded-lg border border-primary-border bg-primary-light">
+                    <Image
+                      src="/Elivate Network Logo.svg"
+                      alt="Logo"
+                      fill
+                      className="object-contain p-1"
+                    />
+                  </div>
+                  <p className="text-sm font-bold text-white">Menu</p>
+                </div>
                 <Button
                   variant="ghost"
-                  className="h-10 w-10 px-0 text-secondary-dim hover:text-white"
+                  className="h-10 w-10 px-0 text-secondary-dim hover:text-white hover:bg-primary-light"
                   aria-label="Close menu"
                   onClick={() => setIsOpen(false)}
                 >
@@ -84,7 +94,7 @@ export function AdminMobileMenu() {
                 </Button>
               </div>
 
-              <nav className="mt-4 flex flex-col gap-1">
+              <nav className="flex flex-col gap-1.5">
                 {navItems.map((item) => {
                   const isActive = pathname === item.href;
                   const Icon = item.icon;
@@ -94,8 +104,10 @@ export function AdminMobileMenu() {
                       href={item.href}
                       onClick={() => setIsOpen(false)}
                       className={cn(
-                        "flex min-h-[44px] items-center gap-3 rounded-lg px-3 text-base text-secondary-muted hover:bg-primary-light hover:text-white transition-colors",
-                        isActive && "bg-primary-lighter font-semibold text-white"
+                        "flex min-h-[48px] items-center gap-3 rounded-xl px-4 text-base transition-all duration-200",
+                        isActive 
+                          ? "bg-accent/10 font-semibold text-accent shadow-sm ring-1 ring-accent/20" 
+                          : "text-secondary-muted hover:bg-primary-light hover:text-white"
                       )}
                     >
                       <Icon
@@ -114,7 +126,7 @@ export function AdminMobileMenu() {
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="mt-auto flex min-h-[44px] items-center gap-3 rounded-lg px-3 text-base text-secondary-dim hover:bg-danger-soft hover:text-danger transition-colors duration-150 disabled:opacity-50"
+              className="mt-auto flex min-h-[52px] items-center gap-3 rounded-xl px-4 text-base font-medium text-danger hover:bg-danger/10 transition-all duration-200 disabled:opacity-50 border border-transparent hover:border-danger/20"
             >
               <LogOut className="h-5 w-5" />
               <span>{isLoggingOut ? "Logging out..." : "Log Out"}</span>
