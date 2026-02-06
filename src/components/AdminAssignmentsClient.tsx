@@ -113,7 +113,7 @@ export function AdminAssignmentsClient({
           onAction={() => setIsModalOpen(true)}
         />
       ) : (
-        <Table>
+        <Table className="min-w-[700px]">
           <TableHeader>
             <TableRow>
               <TableHead>Cleaner</TableHead>

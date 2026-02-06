@@ -44,9 +44,10 @@ const config: Config = {
         dropdown: "10",
         sticky: "20",
         overlay: "30",
-        modal: "40",
-        toast: "50",
-        loader: "60",
+        header: "50",
+        modal: "60",
+        toast: "70",
+        loader: "80",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "-apple-system", "sans-serif"],

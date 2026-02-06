@@ -211,7 +211,7 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
         
-        <Table>
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow>
               <TableHead>Cleaner</TableHead>

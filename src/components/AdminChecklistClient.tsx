@@ -103,8 +103,8 @@ export function AdminChecklistClient({ items }: AdminChecklistClientProps) {
           onAction={() => setIsModalOpen(true)}
         />
       ) : (
-        <Card>
-          <div className="flex flex-col">
+        <Card className="overflow-hidden">
+          <div className="flex flex-col min-w-[500px]">
             {items.map((item) => (
               <div
                 key={item.id}

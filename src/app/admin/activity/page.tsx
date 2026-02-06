@@ -80,7 +80,7 @@ export default async function AdminActivityPage() {
           description="Check-ins and check-outs will appear here."
         />
       ) : (
-        <Table>
+        <Table className="min-w-[800px]">
           <TableHeader>
             <TableRow>
               <TableHead>Cleaner</TableHead>

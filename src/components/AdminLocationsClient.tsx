@@ -188,7 +188,7 @@ export function AdminLocationsClient({ locations }: AdminLocationsClientProps) {
           onAction={query ? () => setQuery("") : () => setIsModalOpen(true)}
         />
       ) : (
-        <Table>
+        <Table className="min-w-[800px]">
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>

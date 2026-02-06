@@ -174,7 +174,7 @@ export function AdminCleanersClient({
           onAction={query ? () => setQuery("") : () => setIsInviteOpen(true)}
         />
       ) : (
-        <Table>
+        <Table className="min-w-[800px]">
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
