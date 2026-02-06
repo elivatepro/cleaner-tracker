@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { createServerClient } from "@/lib/supabase/server";
 import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
@@ -17,7 +18,7 @@ export default async function AdminActivityDetailPage({
   const { data: activity, error } = await supabase
     .from("checkins")
     .select(
-      "id, status, checkin_time, checkout_time, remarks, checkin_within_geofence, checkout_within_geofence, cleaner:profiles(full_name), location:locations(name, address)"
+      "id, status, checkin_time, checkout_time, remarks, checkin_within_geofence, checkout_within_geofence, cleaner:profiles(full_name, avatar_url), location:locations(name, address)"
     )
     .eq("id", id)
     .single();
@@ -69,7 +70,7 @@ export default async function AdminActivityDetailPage({
     remarks: string | null;
     checkin_within_geofence: boolean | null;
     checkout_within_geofence: boolean | null;
-    cleaner: { full_name: string } | null;
+    cleaner: { full_name: string; avatar_url: string | null } | null;
     location: { name: string; address: string } | null;
   };
 
@@ -88,12 +89,25 @@ export default async function AdminActivityDetailPage({
         <ArrowLeft className="h-4 w-4" /> Back to activity
       </Link>
 
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-white">Activity Detail</h1>
-        <p className="text-sm text-secondary-muted">
-          <span className="font-semibold text-white">{activityData.cleaner?.full_name || "Unknown cleaner"}</span> at{" "}
-          <span className="font-semibold text-white">{activityData.location?.name || "Unknown location"}</span>
-        </p>
+      <div className="flex items-center gap-4">
+        <Avatar
+          src={activityData.cleaner?.avatar_url}
+          initials={activityData.cleaner?.full_name
+            ?.split(" ")
+            .filter(Boolean)
+            .map((n) => n[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase()}
+          size="lg"
+        />
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold text-white">Activity Detail</h1>
+          <p className="text-sm text-secondary-muted">
+            <span className="font-semibold text-white">{activityData.cleaner?.full_name || "Unknown cleaner"}</span> at{" "}
+            <span className="font-semibold text-white">{activityData.location?.name || "Unknown location"}</span>
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

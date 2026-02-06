@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -12,7 +13,7 @@ export default async function AdminCleanerDetailPage({ params }: CleanerDetailPr
   const supabase = await createServerClient();
   const { data: cleaner, error } = await supabase
     .from("profiles")
-    .select("id, full_name, email, phone, is_active")
+    .select("id, full_name, email, phone, avatar_url, is_active")
     .eq("id", id)
     .single();
 
@@ -39,9 +40,22 @@ export default async function AdminCleanerDetailPage({ params }: CleanerDetailPr
         &lt;- Back to cleaners
       </Link>
 
-      <div>
-        <h1 className="text-2xl font-bold text-white">{cleaner.full_name}</h1>
-        <p className="text-sm text-secondary-muted">Cleaner profile overview.</p>
+      <div className="flex items-center gap-4">
+        <Avatar
+          src={cleaner.avatar_url}
+          initials={cleaner.full_name
+            .split(" ")
+            .filter(Boolean)
+            .map((n: string) => n[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase()}
+          size="lg"
+        />
+        <div>
+          <h1 className="text-2xl font-bold text-white">{cleaner.full_name}</h1>
+          <p className="text-sm text-secondary-muted">Cleaner profile overview.</p>
+        </div>
       </div>
 
       <Card>

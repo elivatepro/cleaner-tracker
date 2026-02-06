@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -16,7 +17,7 @@ interface ActivityRow {
   checkout_time: string | null;
   checkin_within_geofence: boolean | null;
   checkout_within_geofence: boolean | null;
-  cleaner: { full_name: string } | null;
+  cleaner: { full_name: string; avatar_url: string | null } | null;
   location: { name: string } | null;
 }
 
@@ -34,7 +35,7 @@ export default async function AdminActivityPage() {
   const { data, error } = await supabase
     .from("checkins")
     .select(
-      "id, status, checkin_time, checkout_time, checkin_within_geofence, checkout_within_geofence, cleaner:profiles(full_name), location:locations(name)"
+      "id, status, checkin_time, checkout_time, checkin_within_geofence, checkout_within_geofence, cleaner:profiles(full_name, avatar_url), location:locations(name)"
     )
     .order("checkin_time", { ascending: false })
     .limit(25);
@@ -99,9 +100,22 @@ export default async function AdminActivityPage() {
                   key={item.id}
                   className={cn(geofenceWarning && "bg-warning-soft hover:bg-warning-soft/80")}
                 >
-                  <TableCell className="font-medium text-white flex items-center gap-2">
-                    {item.cleaner?.full_name || "Unknown"}
-                    {geofenceWarning && <AlertTriangle className="h-4 w-4 text-warning" />}
+                  <TableCell className="font-medium text-white">
+                    <div className="flex items-center gap-2">
+                      <Avatar
+                        src={item.cleaner?.avatar_url}
+                        initials={item.cleaner?.full_name
+                          ?.split(" ")
+                          .filter(Boolean)
+                          .map((n) => n[0])
+                          .slice(0, 2)
+                          .join("")
+                          .toUpperCase()}
+                        size="sm"
+                      />
+                      {item.cleaner?.full_name || "Unknown"}
+                      {geofenceWarning && <AlertTriangle className="h-4 w-4 text-warning" />}
+                    </div>
                   </TableCell>
                   <TableCell className="text-secondary-muted">
                     {item.location?.name || "Unknown"}

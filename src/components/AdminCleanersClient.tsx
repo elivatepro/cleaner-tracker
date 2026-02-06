@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -18,6 +19,7 @@ interface CleanerRow {
   full_name: string;
   email: string;
   phone: string | null;
+  avatar_url: string | null;
   is_active: boolean;
 }
 
@@ -183,28 +185,41 @@ export function AdminCleanersClient({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCleaners.map((cleaner) => (
-              <TableRow key={cleaner.id}>
-                <TableCell className="font-medium text-white">
-                  {cleaner.full_name}
-                </TableCell>
-                <TableCell className="text-secondary-muted">{cleaner.email}</TableCell>
-                <TableCell className="text-secondary-muted">{cleaner.phone || "--"}</TableCell>
-                <TableCell>
-                  <Badge variant={cleaner.is_active ? "success" : "danger"}>
-                    {cleaner.is_active ? "Active" : "Inactive"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Link
-                    className="text-sm text-accent hover:text-white transition-colors"
-                    href={`/admin/cleaners/${cleaner.id}`}
-                  >
-                    View Profile
-                  </Link>
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredCleaners.map((cleaner) => {
+              const initials = cleaner.full_name
+                .split(" ")
+                .filter(Boolean)
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase();
+
+              return (
+                <TableRow key={cleaner.id}>
+                  <TableCell className="font-medium text-white">
+                    <div className="flex items-center gap-3">
+                      <Avatar src={cleaner.avatar_url} initials={initials} size="sm" />
+                      {cleaner.full_name}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-secondary-muted">{cleaner.email}</TableCell>
+                  <TableCell className="text-secondary-muted">{cleaner.phone || "--"}</TableCell>
+                  <TableCell>
+                    <Badge variant={cleaner.is_active ? "success" : "danger"}>
+                      {cleaner.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      className="text-sm text-accent hover:text-white transition-colors"
+                      href={`/admin/cleaners/${cleaner.id}`}
+                    >
+                      View Profile
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       )}

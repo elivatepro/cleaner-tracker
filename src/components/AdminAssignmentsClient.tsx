@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
@@ -14,7 +15,7 @@ import { MapPin } from "lucide-react";
 
 interface AssignmentRow {
   id: string;
-  cleaner: { full_name: string } | null;
+  cleaner: { full_name: string; avatar_url: string | null } | null;
   location: { name: string } | null;
   is_active: boolean;
 }
@@ -125,7 +126,20 @@ export function AdminAssignmentsClient({
             {assignments.map((assignment) => (
               <TableRow key={assignment.id}>
                 <TableCell className="font-medium text-white">
-                  {assignment.cleaner?.full_name || "Unknown"}
+                  <div className="flex items-center gap-2">
+                    <Avatar
+                      src={assignment.cleaner?.avatar_url}
+                      initials={assignment.cleaner?.full_name
+                        ?.split(" ")
+                        .filter(Boolean)
+                        .map((n) => n[0])
+                        .slice(0, 2)
+                        .join("")
+                        .toUpperCase()}
+                      size="sm"
+                    />
+                    {assignment.cleaner?.full_name || "Unknown"}
+                  </div>
                 </TableCell>
                 <TableCell className="text-secondary-muted">
                   {assignment.location?.name || "Unknown"}

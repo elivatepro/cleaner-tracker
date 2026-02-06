@@ -6,7 +6,7 @@ export default async function AdminAssignmentsPage() {
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("assignments")
-    .select("id, is_active, cleaner:profiles(full_name), location:locations(name)")
+    .select("id, is_active, cleaner:profiles(full_name, avatar_url), location:locations(name)")
     .order("created_at", { ascending: false });
 
   const { data: cleaners } = await supabase

@@ -6,7 +6,7 @@ export default async function AdminCleanersPage() {
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, full_name, email, phone, is_active")
+    .select("id, full_name, email, phone, avatar_url, is_active")
     .eq("role", "cleaner")
     .order("full_name");
 
