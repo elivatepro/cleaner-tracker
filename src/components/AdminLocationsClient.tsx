@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -19,6 +20,7 @@ interface LocationRow {
   name: string;
   address: string;
   geofence_radius: number;
+  geofence_enabled: boolean;
   is_active: boolean;
 }
 
@@ -28,25 +30,29 @@ interface AdminLocationsClientProps {
 
 export function AdminLocationsClient({ locations }: AdminLocationsClientProps) {
   const { showToast } = useToast();
+  const [rows, setRows] = useState(locations);
   const [query, setQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [radius, setRadius] = useState("200");
+  const [geofenceEnabled, setGeofenceEnabled] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const filteredLocations = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    if (!normalized) return locations;
-    return locations.filter((location) =>
+    if (!normalized) return rows;
+    return rows.filter((location) =>
       `${location.name} ${location.address}`.toLowerCase().includes(normalized)
     );
-  }, [locations, query]);
+  }, [rows, query]);
 
   const resetForm = () => {
     setName("");
     setAddress("");
     setRadius("200");
+    setGeofenceEnabled(true);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -77,6 +83,7 @@ export function AdminLocationsClient({ locations }: AdminLocationsClientProps) {
           name: name.trim(),
           address: address.trim(),
           geofence_radius: parsedRadius,
+          geofence_enabled: geofenceEnabled,
         }),
       });
 
@@ -101,6 +108,48 @@ export function AdminLocationsClient({ locations }: AdminLocationsClientProps) {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleGeofenceToggle = async (locationId: string, enabled: boolean) => {
+    if (updatingId === locationId) return;
+    setUpdatingId(locationId);
+
+    try {
+      const response = await fetch(`/api/admin/locations/${locationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ geofence_enabled: enabled }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        showToast({
+          type: "error",
+          message: data?.error || "Unable to update geofence status.",
+        });
+        return;
+      }
+
+      const updated = data?.data;
+      setRows((prev) =>
+        prev.map((location) =>
+          location.id === locationId
+            ? { ...location, geofence_enabled: updated?.geofence_enabled ?? enabled }
+            : location
+        )
+      );
+
+      showToast({
+        type: "success",
+        message: enabled ? "Geofence enabled." : "Geofence disabled.",
+      });
+    } catch (error) {
+      console.error("Update geofence error:", error);
+      showToast({ type: "error", message: "Something went wrong. Please try again." });
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -145,6 +194,7 @@ export function AdminLocationsClient({ locations }: AdminLocationsClientProps) {
               <TableHead>Name</TableHead>
               <TableHead>Address</TableHead>
               <TableHead>Radius</TableHead>
+              <TableHead>Geofence</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -159,6 +209,19 @@ export function AdminLocationsClient({ locations }: AdminLocationsClientProps) {
                   {location.address}
                 </TableCell>
                 <TableCell className="text-secondary-muted">{location.geofence_radius}m</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={location.geofence_enabled}
+                      onChange={(e) => handleGeofenceToggle(location.id, e.target.checked)}
+                      disabled={updatingId === location.id}
+                      aria-label={location.geofence_enabled ? "Disable geofence" : "Enable geofence"}
+                    />
+                    <span className="text-xs text-secondary-muted">
+                      {location.geofence_enabled ? "On" : "Off"}
+                    </span>
+                  </div>
+                </TableCell>
                 <TableCell>
                   <Badge variant={location.is_active ? "success" : "danger"}>
                     {location.is_active ? "Active" : "Inactive"}
@@ -215,6 +278,19 @@ export function AdminLocationsClient({ locations }: AdminLocationsClientProps) {
             onChange={(e) => setRadius(e.target.value)}
             disabled={isSubmitting}
           />
+
+          <div className="flex items-center justify-between rounded-lg border border-primary-border bg-surface-raised px-4 py-3">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-white">Enforce geofence for this location</span>
+              <span className="text-xs text-secondary-muted">Cleaners must be within radius to check in/out.</span>
+            </div>
+            <Checkbox
+              checked={geofenceEnabled}
+              onChange={(e) => setGeofenceEnabled(e.target.checked)}
+              disabled={isSubmitting}
+              aria-label="Enforce geofence"
+            />
+          </div>
 
           <div className="flex flex-col gap-3 pt-2 md:flex-row md:justify-end">
             <Button

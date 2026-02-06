@@ -7,7 +7,7 @@ export default async function AdminSettingsPage() {
   const { data, error } = await supabase
     .from("app_settings")
     .select(
-      "company_name, primary_color, secondary_color, default_geofence_radius, notify_on_checkin, notify_on_checkout"
+      "company_name, primary_color, secondary_color, default_geofence_radius, notify_on_checkin, notify_on_checkout, geofence_enabled"
     )
     .single();
 

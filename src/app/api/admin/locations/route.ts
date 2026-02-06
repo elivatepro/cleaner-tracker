@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 import { geocodeAddress } from "@/lib/geocode";
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createRouteHandlerClient();
     const {
       data: { user },
       error: authError,
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, address, geofence_radius } = body ?? {};
+    const { name, address, geofence_radius, geofence_enabled } = body ?? {};
 
     if (!name || !address) {
       return NextResponse.json(
@@ -66,8 +66,9 @@ export async function POST(request: NextRequest) {
         latitude: geocodeResult.lat,
         longitude: geocodeResult.lng,
         geofence_radius: radius,
+        geofence_enabled: typeof geofence_enabled === "boolean" ? geofence_enabled : true,
       })
-      .select("id, name, address, geofence_radius, is_active")
+      .select("id, name, address, geofence_radius, geofence_enabled, is_active")
       .single();
 
     if (error || !data) {

@@ -18,6 +18,7 @@ export interface Location {
   latitude: number | null;
   longitude: number | null;
   geofence_radius: number;
+  geofence_enabled: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -91,5 +92,6 @@ export interface AppSettings {
   default_geofence_radius: number;
   notify_on_checkin: boolean;
   notify_on_checkout: boolean;
+  geofence_enabled: boolean;
   updated_at: string;
 }

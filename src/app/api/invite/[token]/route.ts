@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 
 interface Params {
   params: Promise<{ token: string }>;
@@ -12,7 +12,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Invite token is required." }, { status: 400 });
     }
 
-    const supabase = await createServerClient();
+    const supabase = await createRouteHandlerClient();
     const { data, error } = await supabase
       .from("invitations")
       .select("email, expires_at, accepted_at")

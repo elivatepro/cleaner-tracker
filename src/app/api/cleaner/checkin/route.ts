@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendCheckinEmail } from "@/lib/email";
 import { isWithinGeofence } from "@/lib/geofence";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createRouteHandlerClient();
     const {
       data: { user },
       error: authError,
@@ -61,11 +61,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Not assigned to this location." }, { status: 403 });
     }
 
-    const { data: location, error: locationError } = await supabase
-      .from("locations")
-      .select("id, name, latitude, longitude, geofence_radius, is_active")
-      .eq("id", location_id)
-      .single();
+    const [{ data: location, error: locationError }, { data: settings }] = await Promise.all([
+      supabase
+        .from("locations")
+        .select("id, name, latitude, longitude, geofence_radius, geofence_enabled, is_active")
+        .eq("id", location_id)
+        .single(),
+      supabase
+        .from("app_settings")
+        .select("geofence_enabled, company_name, notify_on_checkin")
+        .single(),
+    ]);
 
     if (locationError || !location || !location.is_active) {
       return NextResponse.json({ error: "Location not available." }, { status: 400 });
@@ -78,13 +84,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { within, distance } = isWithinGeofence(
-      lat,
-      lng,
-      location.latitude,
-      location.longitude,
-      location.geofence_radius
-    );
+    const enforceGeofence = (settings?.geofence_enabled ?? true) && (location.geofence_enabled ?? true);
+
+    const { within, distance } = enforceGeofence
+      ? isWithinGeofence(
+          lat,
+          lng,
+          location.latitude,
+          location.longitude,
+          location.geofence_radius
+        )
+      : { within: true, distance: 0 };
 
     if (!within) {
       return NextResponse.json(
@@ -113,11 +123,6 @@ export async function POST(request: NextRequest) {
     if (error || !checkin) {
       return NextResponse.json({ error: "Unable to check in." }, { status: 400 });
     }
-
-    const { data: settings } = await supabase
-      .from("app_settings")
-      .select("company_name, notify_on_checkin")
-      .single();
 
     const companyName = settings?.company_name || "Elivate";
     const notifyAdmins = settings?.notify_on_checkin ?? true;

@@ -15,7 +15,7 @@ export default async function AdminLocationDetailPage({
   const supabase = await createServerClient();
   const { data: location, error } = await supabase
     .from("locations")
-    .select("id, name, address, geofence_radius, is_active")
+    .select("id, name, address, geofence_radius, geofence_enabled, is_active")
     .eq("id", id)
     .single();
 
@@ -59,6 +59,10 @@ export default async function AdminLocationDetailPage({
               <div>
                 <p className="text-xs text-secondary-dim uppercase tracking-wider font-semibold">Geofence Radius</p>
                 <p className="mt-1 text-white">{location.geofence_radius} meters</p>
+              </div>
+              <div>
+                <p className="text-xs text-secondary-dim uppercase tracking-wider font-semibold">Geofence Enforcement</p>
+                <p className="mt-1 text-white">{location.geofence_enabled ? "On" : "Off"}</p>
               </div>
               <div>
                 <p className="text-xs text-secondary-dim uppercase tracking-wider font-semibold">Address</p>

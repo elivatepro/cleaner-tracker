@@ -15,6 +15,7 @@ interface AdminSettingsClientProps {
     default_geofence_radius: number;
     notify_on_checkin: boolean;
     notify_on_checkout: boolean;
+    geofence_enabled: boolean;
   };
 }
 
@@ -26,18 +27,26 @@ export function AdminSettingsClient({ settings }: AdminSettingsClientProps) {
   const [notifyOnCheckout, setNotifyOnCheckout] = useState(
     settings.notify_on_checkout
   );
+  const [geofenceEnabled, setGeofenceEnabled] = useState(
+    settings.geofence_enabled
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleToggle = async (key: "checkin" | "checkout", checked: boolean) => {
+  const handleToggle = async (
+    key: "checkin" | "checkout" | "geofence",
+    checked: boolean
+  ) => {
     if (isSubmitting) return;
 
     const nextCheckin = key === "checkin" ? checked : notifyOnCheckin;
     const nextCheckout =
       key === "checkout" ? checked : notifyOnCheckout;
+    const nextGeofence = key === "geofence" ? checked : geofenceEnabled;
 
     // Optimistic update
     if (key === "checkin") setNotifyOnCheckin(checked);
-    else setNotifyOnCheckout(checked);
+    else if (key === "checkout") setNotifyOnCheckout(checked);
+    else setGeofenceEnabled(checked);
 
     setIsSubmitting(true);
     try {
@@ -47,6 +56,7 @@ export function AdminSettingsClient({ settings }: AdminSettingsClientProps) {
         body: JSON.stringify({
           notify_on_checkin: nextCheckin,
           notify_on_checkout: nextCheckout,
+          geofence_enabled: nextGeofence,
         }),
       });
 
@@ -54,7 +64,8 @@ export function AdminSettingsClient({ settings }: AdminSettingsClientProps) {
       if (!response.ok) {
         // Revert on error
         if (key === "checkin") setNotifyOnCheckin(!checked);
-        else setNotifyOnCheckout(!checked);
+        else if (key === "checkout") setNotifyOnCheckout(!checked);
+        else setGeofenceEnabled(!checked);
 
         showToast({
           type: "error",
@@ -68,7 +79,8 @@ export function AdminSettingsClient({ settings }: AdminSettingsClientProps) {
       console.error("Settings update error:", error);
       // Revert on error
       if (key === "checkin") setNotifyOnCheckin(!checked);
-      else setNotifyOnCheckout(!checked);
+      else if (key === "checkout") setNotifyOnCheckout(!checked);
+      else setGeofenceEnabled(!checked);
 
       showToast({
         type: "error",
@@ -127,6 +139,18 @@ export function AdminSettingsClient({ settings }: AdminSettingsClientProps) {
             <Checkbox
               checked={notifyOnCheckout}
               onChange={(e) => handleToggle("checkout", e.target.checked)}
+              disabled={isSubmitting}
+            />
+          </div>
+          <div className="border-t border-primary-border" />
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-white">Enforce Geofence</span>
+              <span className="text-xs text-secondary-muted">Require cleaners to be within radius to check in/out.</span>
+            </div>
+            <Checkbox
+              checked={geofenceEnabled}
+              onChange={(e) => handleToggle("geofence", e.target.checked)}
               disabled={isSubmitting}
             />
           </div>

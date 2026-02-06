@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 
 interface SignupPayload {
   full_name?: string;
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createServerClient();
+    const supabase = await createRouteHandlerClient();
     const { data: authData } = await supabase.auth.getUser();
     if (authData.user) {
       return NextResponse.json({ error: "Already signed in." }, { status: 400 });

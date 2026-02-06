@@ -42,7 +42,7 @@ export default async function CleanerLayout({ children }: CleanerLayoutProps) {
 
   return (
     <div className="min-h-screen bg-primary">
-      <header className="sticky top-0 z-sticky h-14 border-b border-primary-border bg-primary">
+      <header className="sticky top-0 z-sticky h-14 border-b border-primary-border bg-primary/95 backdrop-blur supports-[backdrop-filter]:bg-primary/90 shadow-sm">
         <div className="flex h-full items-center justify-between px-4 md:px-12">
           <div className="flex items-center gap-3">
             <Avatar src={profile?.avatar_url} initials={initials} size="sm" />

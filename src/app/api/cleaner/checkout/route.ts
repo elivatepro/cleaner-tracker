@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendCheckoutEmail } from "@/lib/email";
 import { isWithinGeofence } from "@/lib/geofence";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 
 interface CheckoutTaskPayload {
   item_id?: string;
@@ -10,7 +10,7 @@ interface CheckoutTaskPayload {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createRouteHandlerClient();
     const {
       data: { user },
       error: authError,
@@ -40,14 +40,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: checkin, error: checkinError } = await supabase
-      .from("checkins")
-      .select(
-        "id, checkin_time, status, location:locations(id, name, latitude, longitude, geofence_radius)"
-      )
-      .eq("id", checkin_id)
-      .eq("cleaner_id", user.id)
-      .single();
+    const [{ data: checkin, error: checkinError }, { data: settings }] = await Promise.all([
+      supabase
+        .from("checkins")
+        .select(
+          "id, checkin_time, status, location:locations(id, name, latitude, longitude, geofence_radius, geofence_enabled)"
+        )
+        .eq("id", checkin_id)
+        .eq("cleaner_id", user.id)
+        .single(),
+      supabase
+        .from("app_settings")
+        .select("geofence_enabled, company_name, notify_on_checkout")
+        .single(),
+    ]);
 
     if (checkinError || !checkin) {
       return NextResponse.json({ error: "Check-in not found." }, { status: 404 });
@@ -59,8 +65,11 @@ export async function POST(request: NextRequest) {
 
     const location = Array.isArray(checkin.location) ? checkin.location[0] : checkin.location;
 
+    const enforceGeofence = (settings?.geofence_enabled ?? true) && (location?.geofence_enabled ?? true);
+
     let withinGeofence = true;
     if (
+      enforceGeofence &&
       location?.latitude !== null &&
       location?.latitude !== undefined &&
       location?.longitude !== null &&
@@ -152,11 +161,6 @@ export async function POST(request: NextRequest) {
     const tasksCompleted = taskRows.filter((task) => task.is_completed).length;
     const tasksTotal = taskRows.length;
     const photosCount = photoRows.length;
-
-    const { data: settings } = await supabase
-      .from("app_settings")
-      .select("company_name, notify_on_checkout")
-      .single();
 
     const companyName = settings?.company_name || "Elivate";
     const notifyAdmins = settings?.notify_on_checkout ?? true;

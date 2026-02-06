@@ -6,7 +6,7 @@ export default async function AdminLocationsPage() {
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("locations")
-    .select("id, name, address, geofence_radius, is_active")
+    .select("id, name, address, geofence_radius, geofence_enabled, is_active")
     .order("name");
 
   if (error) {

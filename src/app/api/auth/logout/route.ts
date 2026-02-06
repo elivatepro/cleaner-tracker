@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 
 export async function POST(_request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createRouteHandlerClient();
     const { data: authData, error: authError } = await supabase.auth.getUser();
 
     if (authError || !authData.user) {

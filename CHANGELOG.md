@@ -1,5 +1,37 @@
 # CHANGELOG
 
+## [2026-02-06 10:45 WAT] — OpenCode
+
+### What was built
+- Added admin setting to enable/disable geofence enforcement and wired check-in/checkout APIs to honor it.
+- Added migration to add `geofence_enabled` column to `app_settings`.
+- Improved sticky headers (admin and cleaner) with opaque blurred backgrounds to prevent content scrolling under the header.
+
+### What's left / next steps
+- Apply migration 003 to Supabase; set `geofence_enabled` as needed.
+- If geofence is disabled, check-ins/outs skip geofence validation server-side.
+
+### Known issues
+- Existing lint warnings about unused imports remain unchanged in other files.
+
+### Decisions made
+- Keep geofence enforcement controllable via a single app-wide setting.
+- Use sticky header backdrop/opacity to avoid overlap artifacts during scroll.
+
+### Files created or modified
+- supabase/migrations/003_app_settings_geofence_toggle.sql (new)
+- src/app/admin/settings/page.tsx (modified)
+- src/components/AdminSettingsClient.tsx (modified)
+- src/app/api/admin/settings/route.ts (modified)
+- src/app/api/settings/public/route.ts (modified)
+- src/app/api/cleaner/checkin/route.ts (modified)
+- src/app/api/cleaner/checkout/route.ts (modified)
+- src/app/admin/layout.tsx (modified)
+- src/app/cleaner/layout.tsx (modified)
+
+### Packages installed
+- None.
+
 ## [2026-02-06 10:30 WAT] — OpenCode
 
 ### What was built

@@ -17,7 +17,7 @@ export default async function CleanerHomePage() {
   const { data: activeCheckin, error: activeError } = await supabase
     .from("checkins")
     .select(
-      "id, checkin_time, location:locations(id, name, address, geofence_radius, latitude, longitude)"
+      "id, checkin_time, location:locations(id, name, address, geofence_radius, geofence_enabled, latitude, longitude)"
     )
     .eq("cleaner_id", user.id)
     .eq("status", "checked_in")
@@ -28,7 +28,7 @@ export default async function CleanerHomePage() {
   const { data: assignments, error: assignmentsError } = await supabase
     .from("assignments")
     .select(
-      "id, location:locations(id, name, address, geofence_radius, latitude, longitude)"
+      "id, location:locations(id, name, address, geofence_radius, geofence_enabled, latitude, longitude)"
     )
     .eq("cleaner_id", user.id)
     .eq("is_active", true);

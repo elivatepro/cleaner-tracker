@@ -41,7 +41,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-primary">
-      <header className="sticky top-0 z-sticky h-16 bg-primary border-b border-primary-border">
+      <header className="sticky top-0 z-sticky h-16 bg-primary/95 backdrop-blur supports-[backdrop-filter]:bg-primary/90 border-b border-primary-border shadow-sm">
         <div className="flex h-full items-center justify-between px-4 md:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <AdminMobileMenu />

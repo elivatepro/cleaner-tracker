@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 
 export async function GET(_request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createRouteHandlerClient();
     const { data, error } = await supabase
       .from("app_settings")
-      .select("company_name, logo_url, primary_color, secondary_color")
+      .select("company_name, logo_url, primary_color, secondary_color, geofence_enabled")
       .single();
 
     if (error || !data) {

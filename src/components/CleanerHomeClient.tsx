@@ -18,6 +18,7 @@ interface LocationAssignment {
     name: string;
     address: string;
     geofence_radius: number;
+    geofence_enabled?: boolean;
     latitude: number | null;
     longitude: number | null;
   } | null;
@@ -82,7 +83,10 @@ export function CleanerHomeClient({
       const position = await getCurrentPosition();
       const { latitude, longitude } = position.coords;
 
+      const geofenceEnforced = primaryAssignment.location.geofence_enabled ?? true;
+
       if (
+        geofenceEnforced &&
         primaryAssignment.location.latitude !== null &&
         primaryAssignment.location.longitude !== null
       ) {
@@ -219,6 +223,7 @@ export function CleanerHomeClient({
   }
 
   const location = primaryAssignment?.location;
+  const geofenceEnforced = location?.geofence_enabled ?? true;
 
   return (
     <div className="flex flex-col gap-8">
@@ -298,7 +303,9 @@ export function CleanerHomeClient({
                   </div>
                 ) : (
                   <p className="mt-4 text-center text-xs text-secondary-dim">
-                    Geofence: {location.geofence_radius}m radius
+                    {geofenceEnforced
+                      ? `Geofence: ${location.geofence_radius}m radius`
+                      : "Geofence disabled for this location"}
                   </p>
                 )}
               </div>

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createServerClient();
+    const supabase = await createRouteHandlerClient();
     const {
       data: { user },
       error: authError,
@@ -24,7 +24,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { notify_on_checkin, notify_on_checkout } = body ?? {};
+    const { notify_on_checkin, notify_on_checkout, geofence_enabled } = body ?? {};
 
     const updates: Record<string, boolean> = {};
     if (typeof notify_on_checkin === "boolean") {
@@ -32,6 +32,9 @@ export async function PATCH(request: NextRequest) {
     }
     if (typeof notify_on_checkout === "boolean") {
       updates.notify_on_checkout = notify_on_checkout;
+    }
+    if (typeof geofence_enabled === "boolean") {
+      updates.geofence_enabled = geofence_enabled;
     }
 
     if (Object.keys(updates).length === 0) {
@@ -45,7 +48,7 @@ export async function PATCH(request: NextRequest) {
       .from("app_settings")
       .update(updates)
       .select(
-        "company_name, primary_color, secondary_color, default_geofence_radius, notify_on_checkin, notify_on_checkout"
+        "company_name, primary_color, secondary_color, default_geofence_radius, notify_on_checkin, notify_on_checkout, geofence_enabled"
       )
       .single();
 
