@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRouteHandlerClient } from "@/lib/supabase/server";
 import { sendAssignmentEmail } from "@/lib/email";
+import { getAppUrl } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
         cleanerName,
         locationName: location.name,
         locationAddress,
-        appUrl: process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin,
+        appUrl: getAppUrl(),
       }).catch((emailError) => {
         console.error("Assignment email error:", emailError);
       });

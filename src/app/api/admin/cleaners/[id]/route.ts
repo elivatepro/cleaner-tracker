@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createRouteHandlerClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { sendAccountDeactivatedEmail, sendAccountReactivatedEmail } from "@/lib/email";
+import { getAppUrl } from "@/lib/utils";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -61,7 +62,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (is_active) {
       void sendAccountReactivatedEmail({
         ...emailParams,
-        appUrl: process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin,
+        appUrl: getAppUrl(),
       }).catch((e) => console.error("Reactivation email error:", e));
     } else {
       void sendAccountDeactivatedEmail(emailParams).catch((e) =>

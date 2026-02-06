@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import * as templates from "./email-templates";
+import { getAppUrl } from "./utils";
 
 function createTransporter() {
   const user = process.env.GMAIL_USER;
@@ -105,7 +106,7 @@ export async function sendCheckinEmail({
         locationName,
         locationAddress,
         checkinTime: timeLabel,
-        dashboardUrl: dashboardUrl || `${process.env.NEXT_PUBLIC_APP_URL}/admin`,
+        dashboardUrl: dashboardUrl || `${getAppUrl()}/admin`,
       })
     : templates.getCheckinConfirmationEmail({
         companyName,
@@ -181,7 +182,7 @@ export async function sendCheckoutEmail({
         totalTasks,
         photosCount,
         hasRemarks,
-        activityDetailUrl: activityDetailUrl || `${process.env.NEXT_PUBLIC_APP_URL}/admin/activity`,
+        activityDetailUrl: activityDetailUrl || `${getAppUrl()}/admin/activity`,
       })
     : templates.getCheckoutConfirmationEmail({
         companyName,

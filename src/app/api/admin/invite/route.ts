@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendInviteEmail } from "@/lib/email";
 import { createRouteHandlerClient } from "@/lib/supabase/server";
+import { getAppUrl } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -78,8 +79,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unable to create invitation." }, { status: 400 });
     }
 
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
+    const appUrl = getAppUrl();
     const inviteLink = `${appUrl}/signup?token=${data.token}`;
 
     const { data: settings } = await supabase

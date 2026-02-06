@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { createRouteHandlerClient } from "@/lib/supabase/server";
 import { sendWelcomeEmail } from "@/lib/email";
+import { getAppUrl } from "@/lib/utils";
 
 interface SignupPayload {
   full_name?: string;
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
       companyName: settings?.company_name || "Elivate",
       logoUrl: settings?.logo_url || undefined,
       cleanerName: full_name,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin,
+      appUrl: getAppUrl(),
     }).catch((e) => console.error("Welcome email error:", e));
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
