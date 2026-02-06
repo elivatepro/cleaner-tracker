@@ -169,24 +169,26 @@ export async function POST(request: NextRequest) {
     const cleanerName = profile?.full_name || "Cleaner";
 
     if (cleanerEmail) {
-      void sendCheckoutEmail({
-        to: cleanerEmail,
-        companyName,
-        logoUrl,
-        cleanerName,
-        locationName: location?.name || "Unknown location",
-        locationAddress: location?.address || "Unknown address",
-        checkinTime: checkin.checkin_time,
-        checkoutTime,
-        durationLabel,
-        tasksCompleted,
-        totalTasks,
-        photosCount,
-        hasRemarks: Boolean(remarks),
-        recipientRole: "cleaner",
-      }).catch((emailError) => {
+      try {
+        await sendCheckoutEmail({
+          to: cleanerEmail,
+          companyName,
+          logoUrl,
+          cleanerName,
+          locationName: location?.name || "Unknown location",
+          locationAddress: location?.address || "Unknown address",
+          checkinTime: checkin.checkin_time,
+          checkoutTime,
+          durationLabel,
+          tasksCompleted,
+          totalTasks,
+          photosCount,
+          hasRemarks: Boolean(remarks),
+          recipientRole: "cleaner",
+        });
+      } catch (emailError) {
         console.error("Checkout email error:", emailError);
-      });
+      }
     }
 
     if (notifyAdmins) {
@@ -197,31 +199,33 @@ export async function POST(request: NextRequest) {
         .eq("is_active", true);
 
       if (admins?.length) {
-        void Promise.all(
-          admins
-            .map((admin) => admin.email)
-            .filter(Boolean)
-            .map((email) =>
-              sendCheckoutEmail({
-                to: email!,
-                companyName,
-                logoUrl,
-                cleanerName,
-                locationName: location?.name || "Unknown location",
-                locationAddress: location?.address || "Unknown address",
-                checkinTime: checkin.checkin_time,
-                checkoutTime,
-                durationLabel,
-                tasksCompleted,
-                totalTasks,
-                photosCount,
-                hasRemarks: Boolean(remarks),
-                recipientRole: "admin",
-              })
-            )
-        ).catch((emailError) => {
+        try {
+          await Promise.all(
+            admins
+              .map((admin) => admin.email)
+              .filter(Boolean)
+              .map((email) =>
+                sendCheckoutEmail({
+                  to: email!,
+                  companyName,
+                  logoUrl,
+                  cleanerName,
+                  locationName: location?.name || "Unknown location",
+                  locationAddress: location?.address || "Unknown address",
+                  checkinTime: checkin.checkin_time,
+                  checkoutTime,
+                  durationLabel,
+                  tasksCompleted,
+                  totalTasks,
+                  photosCount,
+                  hasRemarks: Boolean(remarks),
+                  recipientRole: "admin",
+                })
+              )
+          );
+        } catch (emailError) {
           console.error("Admin checkout email error:", emailError);
-        });
+        }
       }
     }
 

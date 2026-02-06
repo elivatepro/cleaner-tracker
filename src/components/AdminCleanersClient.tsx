@@ -239,6 +239,36 @@ export function AdminCleanersClient({
     }
   };
 
+  const handleDeleteInvite = async (inviteId: string) => {
+    if (updatingId === inviteId) return;
+    if (!confirm("Are you sure you want to cancel this invitation?")) return;
+
+    setUpdatingId(inviteId);
+
+    try {
+      const response = await fetch(`/api/admin/invite/${inviteId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        showToast({
+          type: "error",
+          message: data?.error || "Unable to delete invitation.",
+        });
+        return;
+      }
+
+      setPendingInvites((prev) => prev.filter((i) => i.id !== inviteId));
+      showToast({ type: "success", message: "Invitation cancelled." });
+    } catch (error) {
+      console.error("Delete invite error:", error);
+      showToast({ type: "error", message: "Something went wrong." });
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -364,14 +394,25 @@ export function AdminCleanersClient({
                     {formatDate(invite.expires_at)}
                   </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="small"
-                  onClick={() => handleResendInvite(invite.id)}
-                  disabled={updatingId === invite.id}
-                >
-                  {updatingId === invite.id ? "Sending..." : "Resend"}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="small"
+                    onClick={() => handleResendInvite(invite.id)}
+                    disabled={updatingId === invite.id}
+                  >
+                    {updatingId === invite.id ? "Sending..." : "Resend"}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="small"
+                    className="text-secondary-dim hover:text-danger"
+                    onClick={() => handleDeleteInvite(invite.id)}
+                    disabled={updatingId === invite.id}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>

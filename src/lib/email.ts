@@ -60,7 +60,7 @@ export async function sendInviteEmail({
   });
 
   await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+    from: `"${companyName}" <${process.env.GMAIL_USER}>`,
     to,
     subject,
     html,
@@ -117,7 +117,7 @@ export async function sendCheckinEmail({
       });
 
   await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+    from: `"${companyName}" <${process.env.GMAIL_USER}>`,
     to,
     subject,
     html,
@@ -197,7 +197,7 @@ export async function sendCheckoutEmail({
       });
 
   await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+    from: `"${companyName}" <${process.env.GMAIL_USER}>`,
     to,
     subject,
     html,
@@ -247,7 +247,7 @@ export async function sendGeofenceViolationEmail({
   });
 
   await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+    from: `"${companyName}" <${process.env.GMAIL_USER}>`,
     to,
     subject,
     html,
@@ -277,7 +277,7 @@ export async function sendAccountDeactivatedEmail({
   });
 
   await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+    from: `"${companyName}" <${process.env.GMAIL_USER}>`,
     to,
     subject,
     html,
@@ -306,7 +306,7 @@ export async function sendAccountReactivatedEmail({
   });
 
   await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+    from: `"${companyName}" <${process.env.GMAIL_USER}>`,
     to,
     subject,
     html,
@@ -339,7 +339,7 @@ export async function sendWelcomeEmail({
   });
 
   await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+    from: `"${companyName}" <${process.env.GMAIL_USER}>`,
     to,
     subject,
     html,
@@ -380,7 +380,7 @@ export async function sendAssignmentEmail({
   });
 
   await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+    from: `"${companyName}" <${process.env.GMAIL_USER}>`,
     to,
     subject,
     html,

@@ -131,18 +131,20 @@ export async function POST(request: NextRequest) {
     const cleanerName = profile?.full_name || "Cleaner";
 
     if (cleanerEmail) {
-      void sendCheckinEmail({
-        to: cleanerEmail,
-        companyName,
-        logoUrl,
-        cleanerName,
-        locationName: location.name,
-        locationAddress: location.address,
-        checkinTime: checkin.checkin_time,
-        recipientRole: "cleaner",
-      }).catch((emailError) => {
+      try {
+        await sendCheckinEmail({
+          to: cleanerEmail,
+          companyName,
+          logoUrl,
+          cleanerName,
+          locationName: location.name,
+          locationAddress: location.address,
+          checkinTime: checkin.checkin_time,
+          recipientRole: "cleaner",
+        });
+      } catch (emailError) {
         console.error("Check-in email error:", emailError);
-      });
+      }
     }
 
     if (notifyAdmins) {
@@ -153,25 +155,27 @@ export async function POST(request: NextRequest) {
         .eq("is_active", true);
 
       if (admins?.length) {
-        void Promise.all(
-          admins
-            .map((admin) => admin.email)
-            .filter(Boolean)
-            .map((email) =>
-              sendCheckinEmail({
-                to: email!,
-                companyName,
-                logoUrl,
-                cleanerName,
-                locationName: location.name,
-                locationAddress: location.address,
-                checkinTime: checkin.checkin_time,
-                recipientRole: "admin",
-              })
-            )
-        ).catch((emailError) => {
+        try {
+          await Promise.all(
+            admins
+              .map((admin) => admin.email)
+              .filter(Boolean)
+              .map((email) =>
+                sendCheckinEmail({
+                  to: email!,
+                  companyName,
+                  logoUrl,
+                  cleanerName,
+                  locationName: location.name,
+                  locationAddress: location.address,
+                  checkinTime: checkin.checkin_time,
+                  recipientRole: "admin",
+                })
+              )
+          );
+        } catch (emailError) {
           console.error("Admin check-in email error:", emailError);
-        });
+        }
       }
     }
 

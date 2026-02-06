@@ -71,14 +71,17 @@ export async function POST(request: NextRequest) {
     const companyName = settings?.company_name || "Elivate";
     const logoUrl = settings?.logo_url || undefined;
 
-    void sendInviteEmail({
-      to: updated.email,
-      inviteLink,
-      companyName,
-      logoUrl,
-    }).catch((error) => {
+    try {
+      await sendInviteEmail({
+        to: updated.email,
+        inviteLink,
+        companyName,
+        logoUrl,
+      });
+    } catch (error) {
       console.error("Resend invite email error:", error);
-    });
+      return NextResponse.json({ error: "Unable to send invitation email." }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

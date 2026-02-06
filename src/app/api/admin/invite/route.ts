@@ -90,14 +90,18 @@ export async function POST(request: NextRequest) {
     const companyName = settings?.company_name || "Elivate";
     const logoUrl = settings?.logo_url || undefined;
 
-    void sendInviteEmail({
-      to: data.email,
-      inviteLink,
-      companyName,
-      logoUrl,
-    }).catch((error) => {
+    try {
+      await sendInviteEmail({
+        to: data.email,
+        inviteLink,
+        companyName,
+        logoUrl,
+      });
+    } catch (error) {
       console.error("Invite email error:", error);
-    });
+      // We don't return an error to the user because the invite was created in DB,
+      // but we log it. The user can click 'Resend' if it failed.
+    }
 
     return NextResponse.json({
       data: {
